@@ -13,7 +13,6 @@
  * $ npm install mongoose
  * $ npm install express
  * 
- * 
  * @throws none
  * @see 
  * 
@@ -70,13 +69,18 @@ mongoose.connection.once('open', function() {
   Greeting = mongoose.model('Greeting', greetingSchema);
   
   greeting = new Greeting({ sentence: 'Hello World!' });
-  console.log('new greeting saved to DB'+ greeting.sentence );
+  console.log('new greeting saved to DB: '+ greeting.sentence );
   
 }); // mongoose.connection.once()
 
 //
-// set up route to handle incoming webpage requests from browsers
+// Set up Routes to handle requests from browsers
 //
+
+// Authentication
+app.use( express.basicAuth('admin', 'password') );  // only allow access to usr=admin, pwd=password
+
+// set up route to handle incoming webpage requests
 app.get('/', function(req, res){
   var responseText = '';
 
@@ -86,15 +90,19 @@ app.get('/', function(req, res){
   
   // look up all greetings in our DB
   Greeting.find(function (err, greetings) {
-  if (err) 
-    console.log('error '+err);
-  else console.log('found greeting in DB: '+greetings);
-  });
-  // send newest greeting 
-  responseText = greetings[greetings.length-1].sentence;
+    if (err) {
+      console.log('couldn't find a greeting in DB. error '+err);
+      next(err);
+    }
+    else {
+      console.log('found a greeting in DB: '+greetings);
+      // send newest greeting 
+      responseText = greetings[greetings.length-1].sentence;
   
-  console.log('sending greeting to client: '+responseText);
-  res.send(responseText);
+      console.log('sending greeting to client: '+responseText);
+      res.send(responseText);
+    }
+  });
 }); // apt.get()
 
 //
@@ -108,6 +116,6 @@ app.use(function(err, req, res, next){
   }
 }); // apt.use()
 
-console.log('starting web server');
+console.log('starting the Express (NodeJS) Web server');
 app.listen(8080);
 console.log('Webserver is listening on port 8080');

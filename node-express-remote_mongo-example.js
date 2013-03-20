@@ -6,11 +6,14 @@
  * DESCRIPTION:
  * a "HELLO WORLD" server-side application to demonstrate running a node 
  * Webserver and a mongo DB on separate instances on AWS EC2.
+ * Uses the Express and Mongoose node packages. 
  * 
- * install node on the primary EC2 instance then install mongoDB from the AWS 
- * marketplace - it will be installed on a second EC2 instance. open port 27017
- * for the node isntance's security group on the mongoDB instance then install
- * the express and mongoose node packages on the node instance, using
+ * install node on the primary EC2 instance, then install mongoDB from the AWS 
+ * marketplace - it will be installed on a second EC2 instance. 
+ * Go to the Security Groups for the MongoDB instance, andcreate a new inbound rule: 
+ * open port 27017 for the node instance's security group so that database requests
+ * from there will be let throught the firewall.
+ * Next install the express and mongoose node packages on the node instance, using
  * $ npm install mongoose
  * $ npm install express
  * 
@@ -31,9 +34,9 @@ var app    = express();
 var config = {
       "USER"     : "",                  // if your database has user/pwd defined
       "PASS"     : "",
-      "HOST"     : "ec2-54-252-31-96.ap-southeast-2.compute.amazonaws.com",  // the domain name of the MongoDB EC2 instance
+      "HOST"     : "ec2-54-252-31-96.ap-southeast-2.compute.amazonaws.com",  // the domain name of our MongoDB EC2 instance
       "PORT"     : "27017",             // this is the default port mongoDB is listening for incoming queries
-      "DATABASE" : "my_example"               // the name of your database
+      "DATABASE" : "my_example"         // the name of your database on that instance
     };
 
 var dbPath  = "mongodb://" + config.USER + ":" +
@@ -47,50 +50,64 @@ var db;              // our MongoDb database
 var greetingSchema;  // our mongoose Schema
 var Greeting;        // our mongoose Model
 
-//
+// ------------------------------------------------------------------------
 // Connect to our Mongo Database hosted on another server
 //
 console.log('\nattempting to connect to remote MongoDB instance on another EC2 server '+config.HOST);
 
-if ( !(db = mongoose.connect(dbPath)) ){
+if ( !(db = mongoose.connect(dbPath)) )
   console.log('Unable to connect to MongoDB at '+dbPath);
-} 
-else console.log('connecting to MongoDB at '+dbPath);
-
-// set up event handlers for connection success and fail events
+else 
+  console.log('connecting to MongoDB at '+dbPath);
 
 // connection failed event handler
 mongoose.connection.on('error', function(err){
   console.log('database connect error '+err);
 }); // mongoose.connection.on()
 
-// connection successful event handler
+// connection successful event handler:
+// check if the Db already contains a greeting. if not, create one and save it to the Db
 mongoose.connection.once('open', function() {
   var greeting;
   
   console.log('database '+config.DATABASE+' is now open on '+config.HOST );
   
+  // create our schema
   greetingSchema = mongoose.Schema({
     sentence: String
   });
+  // create our model using this schema
   Greeting = mongoose.model('Greeting', greetingSchema);
   
-  greeting = new Greeting({ sentence: 'Hello World!' });
-  greeting.save(function (err, greetingsav) {
-    if (err) // TODO handle the error
-      console('couldnt save greeting to Db');
-    else{
-      console.log('new greeting saved to DB: '+ greeting.sentence );
+  // search if a greeting has already been saved in our db
+  Greeting.find( {sentence: /^H/}, function(err, greetingslist){
+    if( err ){ // no records found
+      console.log('no greetings in DB yet, creating one' );
 
-      Greeting.find( {sentence: /^H/}, function(err, greetingslist){
-        if( greetingslist )
-          console.log('check ok: found saved '+greetingslist.length+' greetings in DB' );
-      }); // Greeting.find()
-    } // else
-  }); // greeting.save()
+      greeting = new Greeting({ sentence: 'Hello World!' });
+      greeting.save(function (err, greetingsav) {
+        if (err){ // TODO handle the error
+          console('couldnt save a greeting to the Db');
+        }
+        else{
+          console.log('new greeting '+greeting.sentence+' was succesfully saved to Db' );
+
+          Greeting.find( {sentence: /^H/}, function(err, greetingslist){
+            if( greetingslist )
+              console.log('checked after save: found '+greetingslist.length+' greetings in DB' );
+          }); // Greeting.find()
+        } // else
+      }); // greeting.save()
+    } // if no records
+  }); // Greeting.find()
+
+  
 }); // mongoose.connection.once()
 
-// set up Express route to handle incoming webpage requests
+// ------------------------------------------------------------------------
+// set up Express routes to handle incoming requests
+//
+// Express route for all incoming requests
 app.get('/', function(req, res){
   var responseText = '';
 
@@ -105,11 +122,11 @@ app.get('/', function(req, res){
       next(err);
     }
     else {
-      console.log('found '+greetings.length+' greetings in DB. using most recent greeting');
-      // send newest greeting 
-      if(greetings)
+      if(greetings){
+        console.log('found '+greetings.length+' greetings in DB');
+        // send newest greeting 
         responseText = greetings[greetings.length-1].sentence;
-  
+      }
       console.log('sending latest greeting to client: '+responseText);
       res.send(responseText);
     }
@@ -127,7 +144,7 @@ app.use(function(err, req, res, next){
   }
 }); // apt.use()
 
-//
+// ------------------------------------------------------------------------
 // Start Express Webserver
 //
 console.log('starting the Express (NodeJS) Web server');

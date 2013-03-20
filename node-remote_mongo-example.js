@@ -28,7 +28,7 @@ var config = {
       "PASS"     : "",
       "HOST"     : "ec2-54-252-31-96.ap-southeast-2.compute.amazonaws.com",  // the domain name of the MongoDB EC2 instance
       "PORT"     : "27017",             // this is the default port mongoDB is listening for incoming queries
-      "DATABASE" : "test"               // the name of your database
+      "DATABASE" : "my_example"               // the name of your database
     };
 
 var dbPath  = "mongodb://" + config.USER + ":";
@@ -63,6 +63,6 @@ console.log('starting web server');
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'});
   res.end('Hello World\n');
-}).listen(8080, '127.0.0.1');  // 8080 is an alternate HTTP port you can use to 80. enter IP address (theres no call to get it)
+}).listen(8080, 'localhost');  // 8080 is an alternate HTTP port you can use to 80. enter IP address (theres no call to get it)
 
-console.log('NodeJS WebServer now running at http://127.0.0.1:8080/');
+console.log('NodeJS WebServer now running at http://localhost:8080/');

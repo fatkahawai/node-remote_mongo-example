@@ -71,6 +71,10 @@ mongoose.connection.once('open', function() {
   greeting = new Greeting({ sentence: 'Hello World!' });
   console.log('new greeting saved to DB: '+ greeting.sentence );
   
+  Greeting.find( function(err, greetingslist){
+    if( !err )
+      console.log('check ok: found saved greeting in DB: '+ greetingslist[0].sentence );
+  });
 }); // mongoose.connection.once()
 
 //
@@ -97,7 +101,8 @@ app.get('/', function(req, res){
     else {
       console.log('found a greeting in DB: '+greetings);
       // send newest greeting 
-      responseText = greetings[greetings.length-1].sentence;
+      if(greetings)
+        responseText = greetings[greetings.length-1].sentence;
   
       console.log('sending greeting to client: '+responseText);
       res.send(responseText);

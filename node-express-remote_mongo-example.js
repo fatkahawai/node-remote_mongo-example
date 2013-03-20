@@ -72,8 +72,8 @@ mongoose.connection.once('open', function() {
   console.log('new greeting saved to DB: '+ greeting.sentence );
   
   Greeting.find( function(err, greetingslist){
-    if( !err )
-      console.log('check ok: found saved greeting in DB: '+ greetingslist[0].sentence );
+      if( greetingslist )
+        console.log('check ok: found saved '+greetingslist.length+' greetings in DB: ' );
   });
 }); // mongoose.connection.once()
 

@@ -72,14 +72,16 @@ mongoose.connection.once('open', function() {
   greeting.save(function (err, greetingsav) {
     if (err) // TODO handle the error
       console('couldnt save greeting to Db');
-    else
+    else{}
       console.log('new greeting saved to DB: '+ greeting.sentence );
+
+      Greeting.find( {sentence: /^H/}, function(err, greetingslist){
+        if( greetingslist )
+          console.log('check ok: found saved '+greetingslist.length+' greetings in DB: ' );
+      });
+    }
   });
   
-  Greeting.find( {sentence: /^H/}, function(err, greetingslist){
-      if( greetingslist )
-        console.log('check ok: found saved '+greetingslist.length+' greetings in DB: ' );
-  });
 }); // mongoose.connection.once()
 
 //

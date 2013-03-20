@@ -71,7 +71,7 @@ mongoose.connection.once('open', function() {
   greeting = new Greeting({ sentence: 'Hello World!' });
   console.log('new greeting saved to DB: '+ greeting.sentence );
   
-  Greeting.find( function(err, greetingslist){
+  Greeting.find( {sentence: /^H/}, function(err, greetingslist){
       if( greetingslist )
         console.log('check ok: found saved '+greetingslist.length+' greetings in DB: ' );
   });

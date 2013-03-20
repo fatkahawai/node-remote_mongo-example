@@ -97,7 +97,7 @@ mongoose.connection.once('open', function() {
         else{
           console.log('new greeting '+greeting.sentence+' was succesfully saved to Db' );
 
-          Greeting.find( {sentence: /^H/}, function(err, greetings){
+          Greeting.find( function(err, greetings){
             if( greetings )
               console.log('checked after save: found '+greetings.length+' greetings in DB' );
           }); // Greeting.find()

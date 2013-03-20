@@ -69,7 +69,12 @@ mongoose.connection.once('open', function() {
   Greeting = mongoose.model('Greeting', greetingSchema);
   
   greeting = new Greeting({ sentence: 'Hello World!' });
-  console.log('new greeting saved to DB: '+ greeting.sentence );
+  greeting.save(function (err, greetingsav) {
+    if (err) // TODO handle the error
+      console('couldnt save greeting to Db');
+    else
+      console.log('new greeting saved to DB: '+ greeting.sentence );
+  });
   
   Greeting.find( {sentence: /^H/}, function(err, greetingslist){
       if( greetingslist )

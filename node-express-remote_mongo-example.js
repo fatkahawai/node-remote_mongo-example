@@ -95,7 +95,7 @@ app.use( express.basicAuth('admin', 'password') );  // only allow access to usr=
 app.get('/', function(req, res){
   var responseText = '';
 
-  console.log('received client request')
+  console.log('received client request');
   if( !Greeting )
     console.log('Database not ready');
   
@@ -106,12 +106,12 @@ app.get('/', function(req, res){
       next(err);
     }
     else {
-      console.log('found a greeting in DB: '+greetings);
+      console.log('found '+greetings.length+' greetings in DB');
       // send newest greeting 
       if(greetings)
         responseText = greetings[greetings.length-1].sentence;
   
-      console.log('sending greeting to client: '+responseText);
+      console.log('sending latest greeting to client: '+responseText);
       res.send(responseText);
     }
   });

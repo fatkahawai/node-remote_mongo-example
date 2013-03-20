@@ -45,6 +45,8 @@ var dbPath  = "mongodb://" + config.USER + ":" +
     config.PORT + "/"+
     config.DATABASE;
 
+var standardGreeting = 'Hello World!';
+
 var db;              // our MongoDb database
 
 var greetingSchema;  // our mongoose Schema
@@ -80,11 +82,14 @@ mongoose.connection.once('open', function() {
   Greeting = mongoose.model('Greeting', greetingSchema);
   
   // search if a greeting has already been saved in our db
-  Greeting.find( {sentence: /^H/}, function(err, greetingslist){
-    if( err ){ // no records found
+  Greeting.find( {sentence: /^H/}, function(err, greetings){
+    if( !err ) // at least one greeting record already exists in our db. we can use that
+      console.log(greetings.length+' greetings already exist in DB' );
+    }
+    else { // no records found
       console.log('no greetings in DB yet, creating one' );
 
-      greeting = new Greeting({ sentence: 'Hello World!' });
+      greeting = new Greeting({ sentence: standardGreeting });
       greeting.save(function (err, greetingsav) {
         if (err){ // TODO handle the error
           console('couldnt save a greeting to the Db');
@@ -92,9 +97,9 @@ mongoose.connection.once('open', function() {
         else{
           console.log('new greeting '+greeting.sentence+' was succesfully saved to Db' );
 
-          Greeting.find( {sentence: /^H/}, function(err, greetingslist){
-            if( greetingslist )
-              console.log('checked after save: found '+greetingslist.length+' greetings in DB' );
+          Greeting.find( {sentence: /^H/}, function(err, greetings){
+            if( greetings )
+              console.log('checked after save: found '+greetings.length+' greetings in DB' );
           }); // Greeting.find()
         } // else
       }); // greeting.save()
@@ -125,9 +130,9 @@ app.get('/', function(req, res){
       if(greetings){
         console.log('found '+greetings.length+' greetings in DB');
         // send newest greeting 
-        responseText = greetings[greetings.length-1].sentence;
+        responseText = greetings[0].sentence;
       }
-      console.log('sending latest greeting to client: '+responseText);
+      console.log('sending greeting to client: '+responseText);
       res.send(responseText);
     }
   });

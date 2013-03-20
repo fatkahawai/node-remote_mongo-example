@@ -91,7 +91,7 @@ app.get('/', function(req, res){
   // look up all greetings in our DB
   Greeting.find(function (err, greetings) {
     if (err) {
-      console.log('couldn't find a greeting in DB. error '+err);
+      console.log('couldnt find a greeting in DB. error '+err);
       next(err);
     }
     else {

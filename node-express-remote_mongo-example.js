@@ -44,7 +44,8 @@ var db;              // our MongoDb database
 var greetingSchema;  // mongoose Schema
 var Greeting;        // mongoose Model
 
-console.log('attempting to connect to MongoDB on '+config.HOST);
+console.log('----------------------------------------------------------');
+console.log('attempting to connect to remote MongoDB instance on another EC2 server '+config.HOST);
 
 if ( !(db = mongoose.connect(dbPath)) ){
   console.log('Unable to connect to MongoDB at '+dbPath);
@@ -75,12 +76,13 @@ mongoose.connection.once('open', function() {
     else{
       console.log('new greeting saved to DB: '+ greeting.sentence );
 
-      Greeting.find( {sentence: /^H/}, function(err, greetingslist){
-        if( greetingslist )
-          console.log('check ok: found saved '+greetingslist.length+' greetings in DB: ' );
-      }); // Greeting.find()
     } // else
   }); // greeting.save()
+
+      Greeting.find( {sentence: /^H/}, function(err, greetingslist){
+        if( greetingslist )
+          console.log('check ok: found saved '+greetingslist.length+' greetings in DB' );
+      }); // Greeting.find()
   
 }); // mongoose.connection.once()
 
@@ -106,7 +108,7 @@ app.get('/', function(req, res){
       next(err);
     }
     else {
-      console.log('found '+greetings.length+' greetings in DB');
+      console.log('found '+greetings.length+' greetings in DB. using most recent greeting');
       // send newest greeting 
       if(greetings)
         responseText = greetings[greetings.length-1].sentence;
